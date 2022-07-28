@@ -1,9 +1,12 @@
 package study.datajpa.repository;
 
 import org.assertj.core.api.Assertions;
+import org.h2.mvstore.Page;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import study.datajpa.dto.MemberDto;
@@ -14,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -34,9 +38,9 @@ class MemberRepositoryTest {
         Member savedMember = memberRepository.save(member);
         Member findMember = memberRepository.findById(savedMember.getId()).get();
 
-        Assertions.assertThat(findMember.getId()).isEqualTo(member.getId());
-        Assertions.assertThat(findMember.getUsername()).isEqualTo(member.getUsername());
-        Assertions.assertThat(findMember).isEqualTo(member); //JPA 엔티티 동일성보장
+        assertThat(findMember.getId()).isEqualTo(member.getId());
+        assertThat(findMember.getUsername()).isEqualTo(member.getUsername());
+        assertThat(findMember).isEqualTo(member); //JPA 엔티티 동일성보장
     }
 
     @Test
@@ -51,16 +55,16 @@ class MemberRepositoryTest {
         Member findMember1 =  memberRepository.findById(member1.getId()).get();
         Member findMember2 = memberRepository.findById(member2.getId()).get();
 
-        Assertions.assertThat(findMember2).isEqualTo(member2);
-        Assertions.assertThat(findMember2).isEqualTo(member2);
+        assertThat(findMember2).isEqualTo(member2);
+        assertThat(findMember2).isEqualTo(member2);
 
         //리스트 조회 검증
         List<Member> all = memberRepository.findAll();
-        Assertions. assertThat(all.size()).isEqualTo(2);
+        assertThat(all.size()).isEqualTo(2);
 
         //카운트 검증
         long count = memberRepository.count();
-        Assertions.assertThat(count).isEqualTo(2);
+        assertThat(count).isEqualTo(2);
 
         //삭제 검증
         memberRepository.delete(member1);
@@ -68,7 +72,7 @@ class MemberRepositoryTest {
         long deletedCount = memberRepository.count();
 
         //assertThat(findMember1).isEqualTo(member1);
-        Assertions.assertThat(deletedCount).isEqualTo(0);
+        assertThat(deletedCount).isEqualTo(0);
     }
 
     @Test
@@ -86,7 +90,7 @@ class MemberRepositoryTest {
 
         List<Member> result =  memberRepository.findByUsername("AAA");
         Member findMember = result.get(0);
-        Assertions.assertThat(findMember).isEqualTo(m1);
+        assertThat(findMember).isEqualTo(m1);
     }
 
     @Test
@@ -98,7 +102,7 @@ class MemberRepositoryTest {
         memberRepository.save(m2);
 
         List<Member> result =  memberRepository.findUser("AAA",10);
-        Assertions.assertThat(result.get(0)).isEqualTo(m1);
+        assertThat(result.get(0)).isEqualTo(m1);
     }
 
     @Test
@@ -157,5 +161,35 @@ class MemberRepositoryTest {
         //Member findMember = memberRepository.findMemberByUsername("AAA");
         //Optional<Member> aaa= memberRepository.findOptionalByUsername("AAA");
         List<Member> result = memberRepository.findListByUsername("asdf");
+    }
+
+    @Test
+    public void paging(){
+
+        //given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 10));
+        memberRepository.save(new Member("member4", 10));
+        memberRepository.save(new Member("member5", 10));
+
+        int age = 10;
+
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC,"username"));
+
+        //when
+        Page<Member> page = memberRepository.findByAge(10, pageRequest);
+        page.map(member -> new MemberDto(member.getId(), member.getUsername(), null));
+
+        //then
+        List<Member> content = page.getContent(); //조회된 데이터
+        //long totalElements = page.getTotalCount();
+
+        assertThat(content.size()).isEqualTo(3); //조회된 데이터 수
+        assertThat(page.getTotalElements()).isEqualTo(5); //전체 데이터 수
+        assertThat(page.getNumber()).isEqualTo(0); //페이지 번호
+        assertThat(page.getTotalPages()).isEqualTo(2); //전체 페이지 번호
+        assertThat(page.isFirst()).isTrue(); //첫번째 항목인가?
+        assertThat(page.hasNext()).isTrue(); //다음 페이지가 있는가?
     }
 }
