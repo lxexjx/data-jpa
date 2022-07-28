@@ -10,7 +10,9 @@ import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
 import study.datajpa.entity.Team;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -127,5 +129,33 @@ class MemberRepositoryTest {
         for(MemberDto dto : memberDto){
             System.out.println("dto = "dto);
         }
+    }
+
+    @Test
+    public void findByNames(){
+        Member m1 = new Member("AAA", 10);
+        Member m2 = new Member("AAA", 20);
+
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<Member> result =  memberRepository.findByNames(Arrays.asList("AAA","BBB"));
+        for(Member member: result){
+            System.out.println("member = "+ member);
+        }
+    }
+
+    @Test
+    public void returnType(){
+        Member m1 = new Member("AAA", 10);
+        Member m2 = new Member("AAA", 20);
+
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        //List<Member> aaa = memberRepository.findListByUsername("AAA");
+        //Member findMember = memberRepository.findMemberByUsername("AAA");
+        //Optional<Member> aaa= memberRepository.findOptionalByUsername("AAA");
+        List<Member> result = memberRepository.findListByUsername("asdf");
     }
 }
