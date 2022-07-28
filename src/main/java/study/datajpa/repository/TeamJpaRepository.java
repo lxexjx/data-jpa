@@ -1,6 +1,7 @@
 package study.datajpa.repository;
 
 import org.springframework.stereotype.Repository;
+import study.datajpa.entity.Member;
 import study.datajpa.entity.Team;
 
 import javax.persistence.EntityManager;
@@ -32,4 +33,8 @@ public class TeamJpaRepository {
         return em.createQuery("select count(t) from Team t", Long.class).getSingleResult();
     }
 
+    public List<Member> findByUsernameAndAgeGreaterThan(String username, int age) {
+        return em.createQuery("select m from Member m where m.username = :username and m.age > :age")
+                .setParameter("username", username).setParameter("age", age).getResultList();
+    }
 }
