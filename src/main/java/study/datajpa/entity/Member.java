@@ -8,8 +8,8 @@ import javax.persistence.*;
 @Getter @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString(of = {"id", "username", "age"})
-@NamedQueries(name="Member.findByUsername",
-        query="select m from Member m where m.username = :username")
+@NamedQueries(name ="Member.findByUsername", query="select m from Member m where m.username = :username")
+@NamedEntityGraph(name = "Member.all", attributeNodes = @NamedAttributeNode("team"))
 public class Member {
 
     @Id
@@ -43,4 +43,6 @@ public class Member {
         this.team = team;
         team.getMembers().add(this);
     }
+
+    
 }
