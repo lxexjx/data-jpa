@@ -44,5 +44,4 @@ public class Member {
         team.getMembers().add(this);
     }
 
-    
 }
