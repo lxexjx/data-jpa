@@ -1,2 +1,2 @@
 
-JPA ->Query
+JPA ->Query DSL
